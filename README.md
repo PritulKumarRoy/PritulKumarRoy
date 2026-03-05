@@ -1,4 +1,4 @@
-<div style="width: 100%; height: 10vh; position: relative; overflow: hidden; margin: 0; padding: 0;">
+<div style="width: 100%; height: 0.5vh; position: relative; overflow: hidden; margin: 0; padding: 0;">
   <!-- Background GIF - Back Layer -->
   <img 
     src="./bg1.gif"
@@ -24,10 +24,10 @@
   ">
     <span style="
       font-family: 'Times New Roman', serif;
-      font-size: 64px;
+      font-size: 100px;
       font-weight: bold;
       color: #ffffff;
       text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.8);
-    ">Hello,</span>
+    ">Hello, I am Pritul Kumar Roy</span>
   </div>
 </div>
