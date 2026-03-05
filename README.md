@@ -1,4 +1,4 @@
-<div style="width: 100%; height: 10vh; position: relative; overflow: hidden; margin: 0; padding: 0;">
+<div style="width: 100%; height: 20vh; position: relative; overflow: hidden; margin: 0; padding: 0;">
   <img 
     src="./bg1.gif"
     style="
