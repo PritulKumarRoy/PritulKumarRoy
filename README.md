@@ -14,6 +14,6 @@
       left: 0;
     "
   >
-    <source src="./bg1.mp4" type="video/mp4">
+    <source src="./bg1.gif" type="video/mp4">
   </video>
 </div>
