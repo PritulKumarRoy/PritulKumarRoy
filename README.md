@@ -4,7 +4,7 @@
     src="./Hello,.gif"
     style="
       width: 100%;
-      height: 100%;
+      height: 50%;
       object-fit: cover;
       display: block;
       position: absolute;
