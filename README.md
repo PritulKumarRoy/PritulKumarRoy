@@ -1,9 +1,6 @@
 <div style="width: 100%; height: 10vh; position: relative; overflow: hidden; margin: 0; padding: 0;">
-  <video 
-    autoplay 
-    muted 
-    loop 
-    playsinline
+  <img 
+    src="./bg1.gif"
     style="
       width: 100%;
       height: 100%;
@@ -13,7 +10,6 @@
       top: 0;
       left: 0;
     "
-  >
-    <source src="./bg1.gif" type="video/mp4">
-  </video>
+    alt="Background Animation"
+  />
 </div>
