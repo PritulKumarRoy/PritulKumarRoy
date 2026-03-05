@@ -24,7 +24,7 @@
   ">
     <span style="
       font-family: 'Times New Roman', serif;
-      font-size: 100px;
+      font-size: 600px;
       font-weight: bold;
       color: #ffffff;
       text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.8);
