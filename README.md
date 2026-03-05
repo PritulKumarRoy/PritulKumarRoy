@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Hero Section</title>
+    <title>Upgraded Animated Hero Section</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -39,7 +39,7 @@
             z-index: 1;
         }
 
-        /* Overlay for better text readability */
+        /* Overlay for text readability */
         .hero-overlay {
             position: absolute;
             top: 0;
@@ -61,12 +61,11 @@
             color: #ffffff;
             letter-spacing: 0.05em;
             font-family: 'Times New Roman', serif;
-            text-transform: capitalize;
             animation: slideInLeft 0.8s ease-out;
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
         }
 
-        /* Language Switcher */
+        /* Language Switcher Icon */
         .language-switcher {
             position: absolute;
             top: 1.2rem;
@@ -220,6 +219,8 @@
             <div class="language-option" data-lang="ja">日本語</div>
             <div class="language-option" data-lang="zh">中文</div>
             <div class="language-option" data-lang="ar">العربية</div>
+            <div class="language-option" data-lang="ru">Русский</div>
+            <div class="language-option" data-lang="ko">한국어</div>
         </div>
     </div>
 
@@ -234,7 +235,9 @@
             pt: { greeting: "Olá," },
             ja: { greeting: "こんにちは," },
             zh: { greeting: "你好," },
-            ar: { greeting: "مرحبا،" }
+            ar: { greeting: "مرحبا،" },
+            ru: { greeting: "Привет," },
+            ko: { greeting: "안녕하세요," }
         };
 
         const greetingElement = document.getElementById('greeting');
@@ -262,7 +265,7 @@
                 const lang = option.getAttribute('data-lang');
                 currentLanguage = lang;
 
-                // Update greeting text
+                // Update greeting text with fade effect
                 greetingElement.style.opacity = '0';
                 setTimeout(() => {
                     greetingElement.textContent = translations[lang].greeting;
