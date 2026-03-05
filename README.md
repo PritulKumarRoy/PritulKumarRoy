@@ -1,4 +1,4 @@
-<div style="width: 100%; height: 20vh; position: relative; overflow: hidden; margin: 0; padding: 0;">
+<div style="width: 100%; height: 0.5vh; position: relative; overflow: hidden; margin: 0; padding: 0;">
   <!-- Background GIF - Back Layer -->
   <img 
     src="./bg1.gif"
