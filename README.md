@@ -1,275 +1,579 @@
-# 🎮 Pac-Man Repository Explorer
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pac-Man Repository Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-> An interactive way to visualize and navigate your repositories. Each repo is a pellet waiting to be collected!
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-<div style="display: inline-block; padding: 12px 20px; background: #FFE135; color: #000; border-radius: 8px; font-weight: bold; margin: 20px 0;">
-  👾 Click the Pac-Man to move around and collect repositories!
-</div>
+        .game-container {
+            width: 100%;
+            max-width: 800px;
+        }
 
-## 📊 Your Repository Collection
+        .game-wrapper {
+            background: #ffffff;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(27, 31, 35, 0.12), 0 8px 24px rgba(66, 82, 110, 0.12);
+        }
 
-Your GitHub account currently tracks these repositories:
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #000;
+            cursor: crosshair;
+        }
 
-| # | Repository Name | Stars | Status |
-|---|---|---|---|
-| 1 | `data-science-toolkit` | ⭐⭐⭐⭐⭐ | Active |
-| 2 | `web-framework-js` | ⭐⭐⭐⭐ | Active |
-| 3 | `machine-learning-models` | ⭐⭐⭐⭐⭐ | Active |
-| 4 | `python-utilities` | ⭐⭐⭐ | Maintained |
-| 5 | `mobile-app-react-native` | ⭐⭐⭐⭐ | Active |
-| 6 | `api-rest-nodejs` | ⭐⭐⭐⭐ | Active |
-| 7 | `devops-automation` | ⭐⭐⭐ | Maintained |
-| 8 | `game-engine-cpp` | ⭐⭐⭐⭐⭐ | Active |
+        .controls {
+            display: flex;
+            gap: 8px;
+            padding: 16px;
+            border-top: 1px solid #e1e4e8;
+            background: #fafbfc;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
 
----
+        button {
+            padding: 6px 16px;
+            background: #28a745;
+            color: #fff;
+            border: 1px solid #28a745;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        }
 
-## 🕹️ Interactive Pac-Man Game Board
+        button:hover {
+            background: #218838;
+            border-color: #218838;
+        }
 
-Below you'll find an interactive visualization where Pac-Man represents your repository collection:
+        button:active {
+            background: #1e7e34;
+            border-color: #1e7e34;
+        }
 
-<script>
-// Pacman Game Board - Repository Collector
-const gameBoard = document.createElement('div');
-gameBoard.style.cssText = `
-  width: 100%;
-  max-width: 600px;
-  height: 450px;
-  background: #000;
-  border: 3px solid #FFE135;
-  border-radius: 8px;
-  position: relative;
-  margin: 20px 0;
-  box-shadow: 0 0 20px rgba(255, 225, 53, 0.3);
-`;
+        @media (max-width: 768px) {
+            canvas {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-wrapper">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            <div class="controls">
+                <button id="startBtn">Start Game</button>
+                <button id="pauseBtn">Pause</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+        </div>
+    </div>
 
-// Game state
-const game = {
-  pacman: { x: 0, y: 0, direction: 'right' },
-  pellets: [],
-  score: 0,
-  collected: 0,
-  gameWidth: 600,
-  gameHeight: 450,
-  cellSize: 40
-};
+    <script>
+        // ============================================
+        // PAC-MAN GAME ENGINE - ROBUST IMPLEMENTATION
+        // ============================================
 
-// Repository names - converted to pellets
-const repos = [
-  'data-science-toolkit',
-  'web-framework-js',
-  'machine-learning',
-  'python-utils',
-  'mobile-app',
-  'api-rest',
-  'devops',
-  'game-engine'
-];
+        class Vector2 {
+            constructor(x = 0, y = 0) {
+                this.x = x;
+                this.y = y;
+            }
 
-// Initialize pellets
-function initPellets() {
-  game.pellets = [];
-  repos.forEach((repo, idx) => {
-    game.pellets.push({
-      x: (idx % 5) * 110 + 50,
-      y: Math.floor(idx / 5) * 120 + 100,
-      name: repo,
-      collected: false
-    });
-  });
-}
+            add(other) {
+                return new Vector2(this.x + other.x, this.y + other.y);
+            }
 
-// Create pellet elements
-function renderPellets() {
-  game.pellets.forEach(pellet => {
-    if (!pellet.collected) {
-      const pelletEl = document.createElement('div');
-      pelletEl.style.cssText = `
-        position: absolute;
-        width: 14px;
-        height: 14px;
-        background: #FFE135;
-        border-radius: 50%;
-        left: ${pellet.x}px;
-        top: ${pellet.y}px;
-        box-shadow: 0 0 8px rgba(255, 225, 53, 0.6);
-        transition: transform 0.1s;
-      `;
-      pelletEl.title = pellet.name;
-      gameBoard.appendChild(pelletEl);
-    }
-  });
-}
+            distance(other) {
+                const dx = this.x - other.x;
+                const dy = this.y - other.y;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
 
-// Create Pac-Man
-function renderPacman() {
-  const pacmanEl = document.createElement('div');
-  const rotation = game.pacman.direction === 'right' ? 0 : 
-                   game.pacman.direction === 'left' ? 180 : 
-                   game.pacman.direction === 'down' ? 90 : 270;
-  
-  pacmanEl.style.cssText = `
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    background: #FFE135;
-    border-radius: 50%;
-    left: ${game.pacman.x}px;
-    top: ${game.pacman.y}px;
-    clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%);
-    transform: rotate(${rotation}deg);
-    box-shadow: 0 0 10px rgba(255, 225, 53, 0.8);
-    z-index: 10;
-  `;
-  gameBoard.appendChild(pacmanEl);
-}
+            clone() {
+                return new Vector2(this.x, this.y);
+            }
+        }
 
-// Update game
-function update() {
-  gameBoard.innerHTML = '';
-  
-  // Check collisions with pellets
-  game.pellets.forEach(pellet => {
-    if (!pellet.collected) {
-      const distance = Math.hypot(
-        game.pacman.x - pellet.x,
-        game.pacman.y - pellet.y
-      );
-      if (distance < 20) {
-        pellet.collected = true;
-        game.score += 10;
-        game.collected++;
-      }
-    }
-  });
-  
-  // Draw game
-  renderPellets();
-  renderPacman();
-  
-  // Draw score
-  const scoreEl = document.createElement('div');
-  scoreEl.style.cssText = `
-    position: absolute;
-    color: #FFE135;
-    font-weight: bold;
-    top: 10px;
-    left: 10px;
-    font-family: monospace;
-    font-size: 16px;
-  `;
-  scoreEl.textContent = `Score: ${game.score} | Repos: ${game.collected}/${repos.length}`;
-  gameBoard.appendChild(scoreEl);
-}
+        class Pellet {
+            constructor(x, y, repoName) {
+                this.pos = new Vector2(x, y);
+                this.repoName = repoName;
+                this.collected = false;
+                this.radius = 5;
+            }
 
-// Mouse control
-gameBoard.addEventListener('mousemove', (e) => {
-  const rect = gameBoard.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
-  
-  const dx = mouseX - game.pacman.x;
-  const dy = mouseY - game.pacman.y;
-  
-  if (Math.abs(dx) > Math.abs(dy)) {
-    game.pacman.direction = dx > 0 ? 'right' : 'left';
-  } else {
-    game.pacman.direction = dy > 0 ? 'down' : 'up';
-  }
-  
-  game.pacman.x = Math.max(0, Math.min(game.gameWidth - 24, mouseX - 12));
-  game.pacman.y = Math.max(0, Math.min(game.gameHeight - 24, mouseY - 12));
-  
-  update();
-});
+            draw(ctx) {
+                if (this.collected) return;
 
-// Initialize
-initPellets();
-update();
-document.currentScript.parentNode.appendChild(gameBoard);
-</script>
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.arc(this.pos.x, this.pos.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
 
----
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
 
-## 📈 Repository Statistics
+            checkCollision(pacman) {
+                return this.pos.distance(pacman.pos) < pacman.radius + this.radius;
+            }
+        }
 
-```
-Total Repositories: 8
-Active Projects: 6
-Maintained: 2
-Total Stars: ⭐⭐⭐⭐⭐ (4.6/5 average)
-Last Updated: 2024
-```
+        class Ghost {
+            constructor(x, y, color) {
+                this.pos = new Vector2(x, y);
+                this.velocity = new Vector2(0, 0);
+                this.color = color;
+                this.radius = 12;
+                this.speed = 1.5;
+                this.direction = Math.floor(Math.random() * 4);
+                this.changeDirectionTimer = 0;
+                this.changeDirectionInterval = 60;
+            }
 
----
+            update(pacman, canvasWidth, canvasHeight) {
+                // Random direction changes
+                this.changeDirectionTimer++;
+                if (this.changeDirectionTimer > this.changeDirectionInterval) {
+                    this.direction = Math.floor(Math.random() * 4);
+                    this.changeDirectionTimer = 0;
+                    this.changeDirectionInterval = Math.random() * 60 + 40;
+                }
 
-## 🏆 Top Repositories
+                // Simple pathfinding towards Pac-Man
+                const dx = pacman.pos.x - this.pos.x;
+                const dy = pacman.pos.y - this.pos.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
 
-### 🥇 **data-science-toolkit**
-A comprehensive toolkit for data science workflows and machine learning pipelines.
-- **Stars:** ⭐⭐⭐⭐⭐
-- **Language:** Python
-- **Status:** Active Development
+                if (distance < 150) {
+                    this.velocity.x = (dx / distance) * this.speed;
+                    this.velocity.y = (dy / distance) * this.speed;
+                } else {
+                    // Random movement
+                    switch (this.direction) {
+                        case 0: // Up
+                            this.velocity.set(0, -this.speed);
+                            break;
+                        case 1: // Right
+                            this.velocity.set(this.speed, 0);
+                            break;
+                        case 2: // Down
+                            this.velocity.set(0, this.speed);
+                            break;
+                        case 3: // Left
+                            this.velocity.set(-this.speed, 0);
+                            break;
+                    }
+                }
 
-### 🥈 **game-engine-cpp**
-High-performance game engine built with C++ for cross-platform development.
-- **Stars:** ⭐⭐⭐⭐⭐
-- **Language:** C++
-- **Status:** Active Development
+                this.pos = this.pos.add(this.velocity);
 
-### 🥉 **web-framework-js**
-Modern JavaScript framework for building responsive web applications.
-- **Stars:** ⭐⭐⭐⭐
-- **Language:** JavaScript
-- **Status:** Active Development
+                // Boundary wrapping
+                if (this.pos.x < 0) this.pos.x = canvasWidth;
+                if (this.pos.x > canvasWidth) this.pos.x = 0;
+                if (this.pos.y < 0) this.pos.y = canvasHeight;
+                if (this.pos.y > canvasHeight) this.pos.y = 0;
+            }
 
----
+            draw(ctx) {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.pos.x, this.pos.y, this.radius, Math.PI, 0);
+                ctx.lineTo(this.pos.x + this.radius, this.pos.y + this.radius);
+                ctx.lineTo(this.pos.x - this.radius, this.pos.y + this.radius);
+                ctx.fill();
 
-## 🎯 Getting Started
+                // Eyes
+                ctx.fillStyle = '#fff';
+                const eyeOffsetX = 6;
+                const eyeOffsetY = 4;
+                ctx.beginPath();
+                ctx.arc(this.pos.x - eyeOffsetX, this.pos.y - eyeOffsetY, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(this.pos.x + eyeOffsetX, this.pos.y - eyeOffsetY, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
-Each repository in the collection above has its own detailed README with setup instructions, documentation, and contribution guidelines. 
+            checkCollision(pacman) {
+                return this.pos.distance(pacman.pos) < this.radius + pacman.radius;
+            }
 
-**To explore a repository:**
-1. Visit the repository page
-2. Read the comprehensive documentation
-3. Install dependencies as specified
-4. Follow the setup instructions
-5. Start contributing!
+            set(x, y) {
+                this.pos.x = x;
+                this.pos.y = y;
+            }
+        }
 
----
+        Vector2.prototype.set = function(x, y) {
+            this.x = x;
+            this.y = y;
+            return this;
+        };
 
-## 🤝 Contributing
+        class PacMan {
+            constructor(x, y) {
+                this.pos = new Vector2(x, y);
+                this.velocity = new Vector2(0, 0);
+                this.nextVelocity = new Vector2(0, 0);
+                this.radius = 10;
+                this.speed = 2;
+                this.mouthAngle = 0;
+                this.direction = 0; // 0: right, 1: down, 2: left, 3: up
+            }
 
-We welcome contributions across all our repositories! Please:
+            update(canvasWidth, canvasHeight) {
+                // Apply next velocity if possible
+                this.velocity = this.nextVelocity.clone();
 
-1. **Fork** the repository you're interested in
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
+                this.pos = this.pos.add(this.velocity.clone().set(
+                    this.velocity.x * this.speed,
+                    this.velocity.y * this.speed
+                ));
 
----
+                // Boundary wrapping
+                if (this.pos.x < 0) this.pos.x = canvasWidth;
+                if (this.pos.x > canvasWidth) this.pos.x = 0;
+                if (this.pos.y < 0) this.pos.y = canvasHeight;
+                if (this.pos.y > canvasHeight) this.pos.y = 0;
 
-## 📝 License
+                // Update mouth animation
+                this.mouthAngle = (this.mouthAngle + 0.05) % (Math.PI * 2);
+            }
 
-All repositories are licensed under the **MIT License**. See individual repository LICENSE files for details.
+            draw(ctx) {
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
 
----
+                const mouthOpen = Math.abs(Math.sin(this.mouthAngle)) * 0.3;
+                const startAngle = mouthOpen;
+                const endAngle = Math.PI * 2 - mouthOpen;
 
-## 📞 Contact & Support
+                ctx.arc(this.pos.x, this.pos.y, this.radius, startAngle, endAngle);
+                ctx.lineTo(this.pos.x, this.pos.y);
+                ctx.fill();
 
-- **Issues:** Report bugs and feature requests on individual repository issue trackers
-- **Discussions:** Start a discussion in the repository you're interested in
-- **Email:** contact@example.com
-- **Website:** www.example.com
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
 
----
+            setDirection(vx, vy) {
+                this.nextVelocity.set(vx, vy);
 
-<div style="text-align: center; padding: 20px; background: #1a1a1a; border-radius: 8px; margin-top: 20px; color: #FFE135; font-weight: bold;">
-  👾 Happy Coding! May your repositories be ever bug-free and your commits well-documented! 👾
-</div>
+                if (vx === 1) this.direction = 0;
+                else if (vx === -1) this.direction = 2;
+                else if (vy === -1) this.direction = 3;
+                else if (vy === 1) this.direction = 1;
+            }
 
----
+            reset(x, y) {
+                this.pos.set(x, y);
+                this.velocity.set(0, 0);
+                this.nextVelocity.set(0, 0);
+                this.mouthAngle = 0;
+            }
+        }
 
-**Last Updated:** May 2026  
-**Total Repositories Tracked:** 8  
-**Game Status:** 🟢 Active
+        class PacManGame {
+            constructor(canvasId, repositories) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.repositories = repositories;
+                this.gameState = 'idle'; // idle, playing, paused, gameOver, won
+                this.score = 0;
+                this.lives = 3;
+                this.collectedPellets = 0;
+
+                this.initializeGame();
+                this.setupEventListeners();
+            }
+
+            initializeGame() {
+                this.pacman = new PacMan(
+                    this.canvas.width / 2,
+                    this.canvas.height / 2
+                );
+
+                this.pellets = [];
+                this.createPellets();
+
+                this.ghosts = [
+                    new Ghost(100, 100, '#FF006E'),
+                    new Ghost(700, 100, '#00D9FF'),
+                    new Ghost(100, 500, '#39FF14'),
+                    new Ghost(700, 500, '#FF6B35')
+                ];
+
+                this.frameCount = 0;
+                this.lastFrameTime = Date.now();
+            }
+
+            createPellets() {
+                this.pellets = [];
+                const padding = 40;
+                const cols = Math.floor((this.canvas.width - padding * 2) / 60);
+                const rows = Math.floor((this.canvas.height - padding * 2) / 60);
+
+                for (let i = 0; i < this.repositories.length; i++) {
+                    const col = i % cols;
+                    const row = Math.floor(i / cols);
+                    const x = padding + col * 60 + 30;
+                    const y = padding + row * 60 + 30;
+
+                    this.pellets.push(new Pellet(x, y, this.repositories[i].name));
+                }
+            }
+
+            setupEventListeners() {
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key.toLowerCase()) {
+                        case 'arrowup':
+                        case 'w':
+                            this.pacman.setDirection(0, -1);
+                            e.preventDefault();
+                            break;
+                        case 'arrowdown':
+                        case 's':
+                            this.pacman.setDirection(0, 1);
+                            e.preventDefault();
+                            break;
+                        case 'arrowleft':
+                        case 'a':
+                            this.pacman.setDirection(-1, 0);
+                            e.preventDefault();
+                            break;
+                        case 'arrowright':
+                        case 'd':
+                            this.pacman.setDirection(1, 0);
+                            e.preventDefault();
+                            break;
+                    }
+                });
+
+                this.canvas.addEventListener('mousemove', (e) => {
+                    if (this.gameState !== 'playing') return;
+
+                    const rect = this.canvas.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+
+                    const dx = mouseX - this.pacman.pos.x;
+                    const dy = mouseY - this.pacman.pos.y;
+
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        this.pacman.setDirection(dx > 0 ? 1 : -1, 0);
+                    } else {
+                        this.pacman.setDirection(0, dy > 0 ? 1 : -1);
+                    }
+                });
+            }
+
+            start() {
+                this.gameState = 'playing';
+                this.gameLoop();
+            }
+
+            pause() {
+                if (this.gameState === 'playing') {
+                    this.gameState = 'paused';
+                } else if (this.gameState === 'paused') {
+                    this.gameState = 'playing';
+                    this.gameLoop();
+                }
+            }
+
+            reset() {
+                this.score = 0;
+                this.lives = 3;
+                this.collectedPellets = 0;
+                this.initializeGame();
+                this.gameState = 'idle';
+                this.draw();
+            }
+
+            update() {
+                if (this.gameState !== 'playing') return;
+
+                this.pacman.update(this.canvas.width, this.canvas.height);
+
+                // Update ghosts
+                for (let ghost of this.ghosts) {
+                    ghost.update(this.pacman, this.canvas.width, this.canvas.height);
+
+                    // Check ghost collision
+                    if (ghost.checkCollision(this.pacman)) {
+                        this.lives--;
+                        if (this.lives <= 0) {
+                            this.gameState = 'gameOver';
+                        } else {
+                            this.pacman.reset(this.canvas.width / 2, this.canvas.height / 2);
+                        }
+                    }
+                }
+
+                // Check pellet collisions
+                for (let pellet of this.pellets) {
+                    if (!pellet.collected && pellet.checkCollision(this.pacman)) {
+                        pellet.collected = true;
+                        this.score += 10;
+                        this.collectedPellets++;
+                    }
+                }
+
+                // Check win condition
+                if (this.collectedPellets === this.pellets.length) {
+                    this.gameState = 'won';
+                }
+            }
+
+            draw() {
+                // Clear canvas
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw grid background
+                this.ctx.strokeStyle = 'rgba(255, 215, 0, 0.05)';
+                this.ctx.lineWidth = 1;
+                for (let i = 0; i <= this.canvas.width; i += 40) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(i, 0);
+                    this.ctx.lineTo(i, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                for (let i = 0; i <= this.canvas.height; i += 40) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, i);
+                    this.ctx.lineTo(this.canvas.width, i);
+                    this.ctx.stroke();
+                }
+
+                // Draw pellets
+                for (let pellet of this.pellets) {
+                    pellet.draw(this.ctx);
+                }
+
+                // Draw ghosts
+                for (let ghost of this.ghosts) {
+                    ghost.draw(this.ctx);
+                }
+
+                // Draw Pac-Man
+                this.pacman.draw(this.ctx);
+
+                // Draw game status text
+                if (this.gameState === 'paused') {
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.font = 'bold 40px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('PAUSED', this.canvas.width / 2, this.canvas.height / 2);
+                }
+
+                if (this.gameState === 'gameOver') {
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                    this.ctx.fillStyle = '#FF006E';
+                    this.ctx.font = 'bold 50px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('GAME OVER', this.canvas.width / 2, this.canvas.height / 2 - 30);
+
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.font = 'bold 30px Arial';
+                    this.ctx.fillText(`Final Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 30);
+                }
+
+                if (this.gameState === 'won') {
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                    this.ctx.fillStyle = '#39FF14';
+                    this.ctx.font = 'bold 50px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('YOU WIN!', this.canvas.width / 2, this.canvas.height / 2 - 30);
+
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.font = 'bold 30px Arial';
+                    this.ctx.fillText(`Final Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 30);
+                }
+            }
+
+
+
+            gameLoop() {
+                if (this.gameState === 'playing') {
+                    this.update();
+                    this.draw();
+                    requestAnimationFrame(() => this.gameLoop());
+                } else if (this.gameState === 'paused') {
+                    this.draw();
+                } else if (this.gameState === 'gameOver' || this.gameState === 'won') {
+                    this.draw();
+                }
+            }
+        }
+
+        // Initialize game
+        let game;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const repositoriesData = [
+                { name: 'data-science-toolkit' },
+                { name: 'web-framework-js' },
+                { name: 'machine-learning-models' },
+                { name: 'python-utilities' },
+                { name: 'mobile-app-react-native' },
+                { name: 'api-rest-nodejs' },
+                { name: 'devops-automation' },
+                { name: 'game-engine-cpp' }
+            ];
+
+            game = new PacManGame('gameCanvas', repositoriesData);
+            game.draw();
+
+            // Button event listeners
+            document.getElementById('startBtn').addEventListener('click', () => {
+                game.start();
+            });
+
+            document.getElementById('pauseBtn').addEventListener('click', () => {
+                game.pause();
+            });
+
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                game.reset();
+            });
+        });
+    </script>
+</body>
+</html>
