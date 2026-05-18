@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -90,6 +89,9 @@
     font-weight: bold;
     font-size: 0.9rem;
   }
+  .status-container {
+    text-align: center;
+  }
   @media (max-width: 550px) {
     .score, .best { font-size: 1.1rem; }
     button { font-size: 1rem; padding: 5px 12px; }
@@ -104,7 +106,7 @@
     <div class="score"><span>🍎 SCORE</span> <span id="currentScore">0</span></div>
     <div class="best"><span>🏆 BEST</span> <span id="bestScore">0</span></div>
   </div>
-  <div style="text-align: center;">
+  <div class="status-container">
     <div class="status" id="gameMsg">▶ PLAY WITH ARROWS / WASD</div>
   </div>
   <div class="controls">
@@ -166,7 +168,6 @@
       }
     }
     if(free.length === 0) {
-      // win condition
       if(running) winGame();
       return;
     }
@@ -207,15 +208,12 @@
     }
     
     let willEat = (head.x === food.x && head.y === food.y);
-    
     let newSnake = [head, ...snake];
     if(!willEat) newSnake.pop();
     
-    // collision?
     let collide = false;
     if(head.x < 0 || head.x >= SIZE || head.y < 0 || head.y >= SIZE) collide = true;
-    for(let i=0; i<newSnake.length; i++) {
-      if(i===0) continue;
+    for(let i=1; i<newSnake.length; i++) {
       if(newSnake[i].x === head.x && newSnake[i].y === head.y) { collide = true; break; }
     }
     
@@ -270,17 +268,15 @@
   
   function changeDirection(newDir) {
     if(!running) return;
-    const opposite = {
-      'UP': 'DOWN', 'DOWN': 'UP', 'LEFT': 'RIGHT', 'RIGHT': 'LEFT'
-    };
+    const opposite = { 'UP': 'DOWN', 'DOWN': 'UP', 'LEFT': 'RIGHT', 'RIGHT': 'LEFT' };
     if(opposite[newDir] !== dir) {
       nextDir = newDir;
     }
   }
   
-  // Drawing with animation style
   function draw() {
     ctx.clearRect(0, 0, 500, 500);
+    
     // grid
     ctx.strokeStyle = '#2f6b47';
     ctx.lineWidth = 0.5;
@@ -294,7 +290,7 @@
       ctx.stroke();
     }
     
-    // draw food (apple)
+    // draw food
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#e74c3c';
     ctx.beginPath();
@@ -307,7 +303,7 @@
     ctx.fillStyle = '#2c3e2f';
     ctx.fillRect(food.x*CELL + CELL/2 - 1, food.y*CELL + 4, 2, 6);
     
-    // snake
+    // draw snake
     for(let i=0; i<snake.length; i++) {
       let s = snake[i];
       let grad = ctx.createLinearGradient(s.x*CELL, s.y*CELL, s.x*CELL+CELL, s.y*CELL+CELL);
@@ -339,7 +335,7 @@
     }
     ctx.shadowBlur = 0;
     
-    if(!running) {
+    if(!running && interval === null) {
       ctx.globalAlpha = 0.75;
       ctx.fillStyle = '#071a0e';
       ctx.fillRect(0, 0, 500, 500);
@@ -353,7 +349,6 @@
     }
   }
   
-  // rounded rect helper
   if (!CanvasRenderingContext2D.prototype.roundRect) {
     CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
       if (w < 2 * r) r = w / 2;
@@ -371,7 +366,6 @@
     };
   }
   
-  // event handlers
   window.addEventListener('keydown', (e) => {
     let key = e.key;
     if(key === 'ArrowUp' || key === 'w' || key === 'W') { e.preventDefault(); changeDirection('UP'); }
@@ -387,7 +381,6 @@
   document.getElementById('btnRight').addEventListener('click', () => changeDirection('RIGHT'));
   document.getElementById('btnRestart').addEventListener('click', () => resetGame());
   
-  // initial setup
   randomFood();
   startLoop();
   draw();
