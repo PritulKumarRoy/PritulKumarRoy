@@ -1,7 +1,7 @@
 <div style="width: 100%; height: 0.5vh; position: relative; overflow: hidden; margin: 0; padding: 0;">
   <!-- Background GIF - Back Layer -->
   <img 
-    src="./Hello,.gif"
+    src="./Hello,.mp4"
     style="
       width: 100%;
       height: 50%;
