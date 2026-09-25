@@ -25,7 +25,6 @@
 
 <br/>
 
-### `&gt;_` DIGITAL_DESIGN.hdl
 
 <img src="https://img.shields.io/badge/-Digital%20Design-0D0221?style=for-the-badge&logoColor=00E5FF&labelColor=0D0221&color=0D0221" />
 <img src="https://img.shields.io/badge/-Verilog%2FHDL-0D0221?style=for-the-badge&logo=v&logoColor=00FF9C&labelColor=0D0221&color=0D0221" />
